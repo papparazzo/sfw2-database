@@ -20,13 +20,14 @@
  *
  */
 
-namespace SFW2\Core\Database;
+namespace SFW2\Database;
 
 use Exception as BaseException;
 
 class Exception extends BaseException {
-    const CON_FAILED             = 1;
-    const NO_ROW_FETCHED_SEL_ROW = 2;
-    const NO_ROW_FETCHED_SEL_SNG = 3;
-    const QUERY_FAILED           = 4;
+    final public const INIT_CONNECTION_FAILED      = 1;
+    final public const NO_ROW_FETCHED_SEL_ROW      = 2;
+    final public const NO_ROW_FETCHED_SEL_SNG      = 3;
+    final public const QUERY_FAILED                = 4;
+    final public const WHERE_CONDITON_ALLREADY_SET = 5;
 }

@@ -22,9 +22,12 @@
 
 namespace SFW2\Database;
 
-use SFW2\Database\Database\Exception as DatabaseException;
+use SFW2\Database\Exception as DatabaseException;
 use mysqli;
 
+/**
+ * @noinspection PhpUnused
+ */
 class Database implements DatabaseInterface {
 
     protected mysqli $handle;
@@ -36,6 +39,9 @@ class Database implements DatabaseInterface {
 
     protected string $prefix = '';
 
+    /**
+     * @throws \SFW2\Database\Exception
+     */
     public function __construct(string $host, string $usr, string $pwd, string $db, string $tablePrefix = 'sfw2') {
         $this->host   = $host;
         $this->usr    = $usr;
@@ -45,49 +51,64 @@ class Database implements DatabaseInterface {
         $this->connect($host, $usr, $pwd, $db);
     }
 
-    protected function connect(string $host, string $usr, string $pwd, string $db) : void {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    protected function connect(string $host, string $usr, string $pwd, string $db): void {
         $this->handle = new mysqli('p:' . $host, $usr, $pwd, $db);
         $err = mysqli_connect_error();
 
         if($err) {
-            throw new DatabaseException("Could not connect to database <$err>", DatabaseException::CON_FAILED);
+            throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
         }
         $this->query("set names 'utf8';");
     }
 
-    public function __wakeup() : void {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function __wakeup(): void {
         $this->connect($this->host, $this->usr, $this->pwd, $this->db);
     }
 
-    public function __sleep() : void {
+    public function __sleep(): array {
         $this->handle->close();
+        return [];
     }
 
-    public function delete(string $stmt, array $params = []) : int {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function delete(string $stmt, array $params = []): int {
         return $this->update($stmt, $params);
     }
 
-    public function update(string $stmt, array $params = []) : int {
-        $params = $this->escape($params);
-        $stmt = vsprintf($stmt, $params);
-        $this->query($stmt);
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function update(string $stmt, array $params = []): int {
+        $this->query($stmt, $params);
         return $this->handle->affected_rows;
     }
 
-    public function insert(string $stmt, array $params = []) : int {
-        $params = $this->escape($params);
-        $stmt = vsprintf($stmt, $params);
-        $this->query($stmt);
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function insert(string $stmt, array $params = []): int {
+        $this->query($stmt, $params);
         return $this->handle->insert_id;
     }
 
-    public function select(string $stmt, Array $params = [], int $offset = -1, int $count = -1) : array {
-        $params = $this->escape($params);
-        $stmt  = vsprintf($stmt, $params);
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function select(string $stmt, array $params = [], ?int $offset = null, ?int $count = null): array {
         $stmt .= $this->addLimit($offset, $count);
 
-        $res = $this->query($stmt);
+        $res = $this->query($stmt, $params);
         $rv = [];
+
+        /** @noinspection PhpAssignmentInConditionInspection */
         while(($row = $res->fetch_assoc())) {
             $rv[] = $row;
         }
@@ -95,7 +116,10 @@ class Database implements DatabaseInterface {
         return $rv;
     }
 
-    public function selectRow(string $stmt, array $params = [], int $row = 0) : array {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function selectRow(string $stmt, array $params = [], int $row = 0): array {
         $res = $this->select($stmt, $params, $row, 1);
         if(empty($res)) {
             return [];
@@ -103,6 +127,9 @@ class Database implements DatabaseInterface {
         return array_shift($res);
     }
 
+    /**
+     * @throws \SFW2\Database\Exception
+     */
     public function selectSingle(string $stmt, array $params = []) {
         $res = $this->selectRow($stmt, $params);
         if(empty($res)) {
@@ -111,20 +138,18 @@ class Database implements DatabaseInterface {
         return array_shift($res);
     }
 
-    public function selectKeyValue(string $key, string $value, string $table, string $condition = "", array $params = []) : array {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array {
         $key = $this->escape($key);
         $value = $this->escape($value);
         $table = $this->escape($table);
-        $params = $this->escape($params);
 
-        $stmt =
-            "SELECT `" . $key . "` AS `k`, `" . $value . "` AS `v` " .
-            "FROM `" . $table . "` " .
-            $condition;
-
-        $stmt  = vsprintf($stmt, $params);
-        $res = $this->query($stmt);
+        $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`", $conditions), $params);
         $rv = [];
+
+        /** @noinspection PhpAssignmentInConditionInspection */
         while(($row = $res->fetch_assoc())) {
             $rv[$row['k']] = $row['v'];
         }
@@ -132,21 +157,17 @@ class Database implements DatabaseInterface {
         return $rv;
     }
 
-    public function selectKeyValues(string $key, array $values, string $table, string $condition = "", array $params = []) : array {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array {
         $key = $this->escape($key);
         $table = $this->escape($table);
-        $values = $this->escape($values);
-        $params = $this->escape($params);
 
-        $stmt =
-            "SELECT `" . $key . "` AS `k`, `" .
-            implode("`, `", $values) . "` " .
-            "FROM `" . $table . "` " .
-            $condition;
-
-        $stmt  = vsprintf($stmt, $params);
-        $res = $this->query($stmt);
+        $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `" . implode("`, `", $values) . "` FROM `$table`", $conditions), $params);
         $rv = [];
+
+        /** @noinspection PhpAssignmentInConditionInspection */
         while(($row = $res->fetch_assoc())) {
             $key = $row['k'];
             unset($row['k']);
@@ -156,59 +177,101 @@ class Database implements DatabaseInterface {
         return $rv;
     }
 
-    public function selectCount(string $table, string $condition = "", array $params = []) {
-        $stmt =
-            "SELECT COUNT(*) AS `cnt` " .
-            "FROM `" . $table . "` " .
-            $condition;
-
-        return $this->selectSingle($stmt, $params);
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function selectCount(string $table, array $conditions = [], array $params = []): int {
+        return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
     }
 
-    public function entryExists(string $table, string $column, string $content) : bool {
-        $where = [];
-        $where[] = '`' . $column . '` = \''. $this->escape($content) . '\'';
-        if($this->selectCount($table, $where) == 0) {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function entryExists(string $table, string $column, string $value): bool {
+        if($this->selectCount($table, [$column => $value]) == 0) {
             return false;
         }
         return true;
     }
 
-    public function escape($data) {
-        if(!is_array($data)) {
-            return $this->handle->escape_string($data);
+    public function escape($data): string
+    {
+        if (is_null($data)) {
+            return 'NULL';
         }
-        $rv = [];
-        foreach($data as $v) {
-            $rv[] = $this->escape($v);
+        if (is_bool($data) && $data) {
+            return '1';
         }
-        return $rv;
+        if (is_bool($data)) {
+            return '0';
+        }
+        if (is_array($data)) {
+            foreach ($data as &$item) {
+                $item = $this->escape($item);
+            }
+            return implode(", ", $data);
+        }
+        return $this->handle->real_escape_string((string)$data);
     }
 
-    public function query(string $stmt) {
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    public function query(string $stmt, array $params = [])
+    {
+        if (!empty($params)) {
+            $params = array_map([$this, 'escape'], $params);
+            $stmt = vsprintf($stmt, $params);
+        }
+
         $stmt = str_replace('{TABLE_PREFIX}', $this->prefix, $stmt);
 
         $res = $this->handle->query($stmt);
         if($res === false) {
-            throw new DatabaseException(
-                'query "' . $stmt . '" failed!' . PHP_EOL . PHP_EOL . $this->handle->error,
-                DatabaseException::QUERY_FAILED
-            );
+            throw new DatabaseException("query <$stmt> failed! ({$this->handle->error})", DatabaseException::QUERY_FAILED);
+        }
+        if ($res === true) {
+            return null;
         }
         return $res;
     }
 
-    private function addLimit(int $offset, int $count) : string {
-        $offset = preg_replace('/[^0-9-]/', '', $offset);
-        $count = preg_replace('/[^0-9-]/', '', $count);
+    protected function addLimit(string $stmt, ?int $count, int $offset = 0): string {
+        if ($count == null) {
+            return $stmt;
+        }
 
-        if($offset == -1 || $count == -1) {
-            return "";
+        /** @noinspection PhpAssignmentInConditionInspection */
+        if (($pos = mb_stripos($stmt, ' LIMIT ')) !== false) {
+            $stmt = mb_substr($stmt, 0, $pos);
         }
-        if($offset == "" || $count == "") {
-            $offset = 0;
-            $count = 10;
+
+        if ($offset == 0) {
+            return "$stmt LIMIT $count";
         }
-        return " LIMIT " . $offset . ", " . $count;
+        return "$stmt LIMIT $offset, $count";
+    }
+
+    /**
+     * @throws \SFW2\Database\Exception
+     */
+    protected function addConditions(string $stmt, array $conditions = []): string {
+        if (mb_stripos($stmt, ' WHERE ') !== false) {
+            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set", DatabaseException::WHERE_CONDITON_ALLREADY_SET);
+        }
+
+        if (empty($conditions)) {
+            return $stmt;
+        }
+
+        foreach ($conditions as $column => &$item) {
+            if (is_array($item)) {
+                $item = "`$column` IN({$this->escape($item)})";
+            } else {
+                $item = "`$column` = '{$this->escape($item)}'";
+            }
+        }
+
+        return "$stmt WHERE " . implode(' AND ', $conditions);
     }
 }

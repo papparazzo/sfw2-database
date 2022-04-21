@@ -36,16 +36,16 @@ interface DatabaseInterface {
 
     public function selectSingle(string $stmt, array $params = []);
 
-    public function selectKeyValue(string $key, string $value, string $table, string $condition = "", array $params = []): array;
+    public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array;
 
-    public function selectKeyValues(string $key, array $values, string $table, string $condition = "", array $params = []): array;
+    public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array;
 
-    public function selectCount(string $table, string $condition = "", array $params = []): int;
+    public function selectCount(string $table, array $conditions = [], array $params = []): int;
 
-    public function entryExists(string $table, string $column, string $content): bool;
+    public function entryExists(string $table, string $column, string $value): bool;
 
     public function escape($data);
 
-    public function query(string $stmt);
+    public function query(string $stmt, array $params = []);
 
 }
