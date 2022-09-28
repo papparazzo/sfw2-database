@@ -102,8 +102,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws \SFW2\Database\Exception
      */
-    public function select(string $stmt, array $params = [], ?int $offset = null, ?int $count = null): array {
-        $stmt .= $this->addLimit($offset, $count);
+    public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
+        $stmt = $this->addLimit($stmt, $count, $offset);
 
         $res = $this->query($stmt, $params);
         $rv = [];

@@ -30,7 +30,7 @@ interface DatabaseInterface {
 
     public function insert(string $stmt, array $params = []): int;
 
-    public function select(string $stmt, Array $params = [], int $offset = -1, int $count = -1): array;
+    public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array;
 
     public function selectRow(string $stmt, array $params = [], int $row = 0): array;
 
