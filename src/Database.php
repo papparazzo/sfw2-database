@@ -40,7 +40,7 @@ class Database implements DatabaseInterface {
     protected string $prefix = '';
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function __construct(string $host, string $usr, string $pwd, string $db, string $tablePrefix = 'sfw2') {
         $this->host   = $host;
@@ -52,7 +52,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     protected function connect(string $host, string $usr, string $pwd, string $db): void {
         $this->handle = new mysqli('p:' . $host, $usr, $pwd, $db);
@@ -65,7 +65,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function __wakeup(): void {
         $this->connect($this->host, $this->usr, $this->pwd, $this->db);
@@ -77,14 +77,14 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function delete(string $stmt, array $params = []): int {
         return $this->update($stmt, $params);
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function update(string $stmt, array $params = []): int {
         $this->query($stmt, $params);
@@ -92,7 +92,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function insert(string $stmt, array $params = []): int {
         $this->query($stmt, $params);
@@ -100,7 +100,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
         $stmt = $this->addLimit($stmt, $count, $offset);
@@ -117,7 +117,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function selectRow(string $stmt, array $params = [], int $row = 0): array {
         $res = $this->select($stmt, $params, $row, 1);
@@ -128,7 +128,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function selectSingle(string $stmt, array $params = []) {
         $res = $this->selectRow($stmt, $params);
@@ -139,7 +139,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array {
         $key = $this->escape($key);
@@ -158,7 +158,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array {
         $key = $this->escape($key);
@@ -178,14 +178,14 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function selectCount(string $table, array $conditions = [], array $params = []): int {
         return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function entryExists(string $table, string $column, string $value): bool {
         if($this->selectCount($table, [$column => $value]) == 0) {
@@ -215,7 +215,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     public function query(string $stmt, array $params = [])
     {
@@ -253,7 +253,7 @@ class Database implements DatabaseInterface {
     }
 
     /**
-     * @throws \SFW2\Database\Exception
+     * @throws Exception
      */
     protected function addConditions(string $stmt, array $conditions = []): string {
         if (mb_stripos($stmt, ' WHERE ') !== false) {
