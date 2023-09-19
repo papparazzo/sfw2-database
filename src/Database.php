@@ -91,28 +91,6 @@ final class Database extends DatabaseAbstract {
     /**
      * @throws Exception
      */
-    public function selectRow(string $stmt, array $params = [], int $row = 0): array {
-        $res = $this->select($stmt, $params, $row, 1);
-        if(empty($res)) {
-            return [];
-        }
-        return array_shift($res);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function selectSingle(string $stmt, array $params = []) {
-        $res = $this->selectRow($stmt, $params);
-        if(empty($res)) {
-            return null;
-        }
-        return array_shift($res);
-    }
-
-    /**
-     * @throws Exception
-     */
     public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array {
         $key = $this->escape($key);
         $value = $this->escape($value);
