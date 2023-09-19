@@ -74,29 +74,6 @@ final class Database extends DatabaseAbstract {
     /**
      * @throws Exception
      */
-    public function delete(string $stmt, array $params = []): int {
-        return $this->update($stmt, $params);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function update(string $stmt, array $params = []): int {
-        $this->query($stmt, $params);
-        return $this->handle->affected_rows;
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function insert(string $stmt, array $params = []): int {
-        $this->query($stmt, $params);
-        return $this->handle->insert_id;
-    }
-
-    /**
-     * @throws Exception
-     */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
         $stmt = $this->addLimit($stmt, $count, $offset);
 
