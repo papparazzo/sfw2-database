@@ -22,6 +22,7 @@
 
 namespace SFW2\Database;
 
+use mysqli_result;
 use SFW2\Database\Exception as DatabaseException;
 use mysqli;
 
@@ -130,44 +131,7 @@ final class Database extends DatabaseAbstract {
     /**
      * @throws Exception
      */
-    public function selectCount(string $table, array $conditions = [], array $params = []): int {
-        return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function entryExists(string $table, string $column, string $value): bool {
-        if($this->selectCount($table, [$column => $value]) == 0) {
-            return false;
-        }
-        return true;
-    }
-
-    public function escape($data): string
-    {
-        if (is_null($data)) {
-            return 'NULL';
-        }
-        if (is_bool($data) && $data) {
-            return '1';
-        }
-        if (is_bool($data)) {
-            return '0';
-        }
-        if (is_array($data)) {
-            foreach ($data as &$item) {
-                $item = $this->escape($item);
-            }
-            return implode(", ", $data);
-        }
-        return $this->handle->real_escape_string((string)$data);
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function query(string $stmt, array $params = [])
+    public function query(string $stmt, array $params = []): mysqli_result|null
     {
         if (!empty($params)) {
             $params = array_map([$this, 'escape'], $params);
@@ -186,42 +150,17 @@ final class Database extends DatabaseAbstract {
         return $res;
     }
 
-    protected function addLimit(string $stmt, ?int $count, int $offset = 0): string {
-        if ($count == null) {
-            return $stmt;
-        }
-
-        /** @noinspection PhpAssignmentInConditionInspection */
-        if (($pos = mb_stripos($stmt, ' LIMIT ')) !== false) {
-            $stmt = mb_substr($stmt, 0, $pos);
-        }
-
-        if ($offset == 0) {
-            return "$stmt LIMIT $count";
-        }
-        return "$stmt LIMIT $offset, $count";
+    protected function getAffectedRows(): int
+    {
+        return $this->handle->affected_rows;
     }
 
-    /**
-     * @throws Exception
-     */
-    protected function addConditions(string $stmt, array $conditions = []): string {
-        if (mb_stripos($stmt, ' WHERE ') !== false) {
-            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set", DatabaseException::WHERE_CONDITON_ALLREADY_SET);
-        }
+    protected function getLastInsertedId(): int {
+        return $this->handle->insert_id;
+    }
 
-        if (empty($conditions)) {
-            return $stmt;
-        }
-
-        foreach ($conditions as $column => &$item) {
-            if (is_array($item)) {
-                $item = "`$column` IN({$this->escape($item)})";
-            } else {
-                $item = "`$column` = '{$this->escape($item)}'";
-            }
-        }
-
-        return "$stmt WHERE " . implode(' AND ', $conditions);
+    protected function escapeString(string $string): string
+    {
+        return $this->handle->real_escape_string($string);
     }
 }
