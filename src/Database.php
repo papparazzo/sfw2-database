@@ -28,26 +28,21 @@ use mysqli;
 /**
  * @noinspection PhpUnused
  */
-class Database implements DatabaseInterface {
+final class Database extends DatabaseAbstract {
 
     protected mysqli $handle;
-
-    protected string $host;
-    protected string $usr;
-    protected string $pwd;
-    protected string $db;
-
-    protected string $prefix = '';
 
     /**
      * @throws Exception
      */
-    public function __construct(string $host, string $usr, string $pwd, string $db, string $tablePrefix = 'sfw2') {
-        $this->host   = $host;
-        $this->usr    = $usr;
-        $this->pwd    = $pwd;
-        $this->db     = $db;
-        $this->prefix = $tablePrefix;
+    public function __construct(
+        private readonly string $host,
+        private readonly string $usr,
+        private readonly string $pwd,
+        private readonly string $db,
+        string $prefix = 'sfw2'
+    ) {
+        parent::__construct($prefix);
         $this->connect($host, $usr, $pwd, $db);
     }
 
