@@ -14,6 +14,9 @@ final class Sqlite extends DatabaseAbstract
         $this->handle = new SQLite3($fileName);
     }
 
+    /**
+     * @throws Exception
+     */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
         $stmt = $this->addLimit($stmt, $count, $offset);
 
@@ -28,6 +31,9 @@ final class Sqlite extends DatabaseAbstract
         return $rv;
     }
 
+    /**
+     * @throws Exception
+     */
     public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array
     {
         $key = $this->escape($key);
@@ -45,6 +51,9 @@ final class Sqlite extends DatabaseAbstract
         return $rv;
     }
 
+    /**
+     * @throws Exception
+     */
     public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array
     {
         $key = $this->escape($key);
@@ -78,9 +87,6 @@ final class Sqlite extends DatabaseAbstract
         $res = $this->handle->query($stmt);
         if($res === false) {
             throw new DatabaseException("query <$stmt> failed! ({$this->handle->lastErrorMsg()})", DatabaseException::QUERY_FAILED);
-        }
-        if ($res === true) {
-            return null;
         }
         return $res;
     }

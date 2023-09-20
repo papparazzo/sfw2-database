@@ -110,7 +110,7 @@ abstract class DatabaseAbstract implements DatabaseInterface
         return "$stmt LIMIT $offset, $count";
     }
 
-      /**
+    /**
      * @throws Exception
      */
     protected function addConditions(string $stmt, array $conditions = []): string {
