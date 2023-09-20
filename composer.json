@@ -13,6 +13,8 @@
         "psr-4": {
             "SFW2\\Database\\": "src/"
         }
+    },
+    "require-dev": {
+        "phpstan/phpstan": "^1.10"
     }
 }
-
