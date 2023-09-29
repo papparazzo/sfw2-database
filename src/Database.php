@@ -22,54 +22,70 @@
 
 namespace SFW2\Database;
 
-use mysqli_result;
+use PDO;
+use PDOStatement;
 use SFW2\Database\Exception as DatabaseException;
-use mysqli;
+use Throwable;
 
 /**
  * @noinspection PhpUnused
  */
-final class Database extends DatabaseAbstract {
+class Database implements DatabaseInterface {
 
-    protected mysqli $handle;
+    protected PDO $handle;
 
     /**
      * @throws Exception
      */
     public function __construct(
-        private readonly string $host,
-        private readonly string $usr,
-        private readonly string $pwd,
-        private readonly string $db,
-        string $prefix = 'sfw2'
+        protected string $dsn,
+        protected string $usr,
+        protected string $pwd,
+        protected array $options = [],
+        protected string $prefix = 'sfw2'
     ) {
-        parent::__construct($prefix);
-        $this->connect($host, $usr, $pwd, $db);
+        $this->connect();
     }
 
     /**
      * @throws Exception
      */
-    protected function connect(string $host, string $usr, string $pwd, string $db): void {
-        $this->handle = new mysqli('p:' . $host, $usr, $pwd, $db);
-        $err = mysqli_connect_error();
-
-        if($err) {
-            throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
-        }
-        $this->query("set names 'utf8';");
+    protected function connect(): void {
+        $this->handle = new PDO($this->dsn, $this->usr, $this->pwd);
+        #  throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
+        # FIXME: Nur bei mysql:
+        # $this->query("set names 'utf8';");
     }
 
     /**
      * @throws Exception
      */
     public function __wakeup(): void {
-        $this->connect($this->host, $this->usr, $this->pwd, $this->db);
+        $this->connect();
     }
 
     public function __sleep(): array {
-        $this->handle->close();
+        #unset($this->handle);
         return [];
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function delete(string $stmt, array $params = []): int {
+        return $this->update($stmt, $params);
+    }
+
+    public function update(string $stmt, array $params = []): int {
+        return $this->handle->exec($this->getStatement($stmt, $params));
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function insert(string $stmt, array $params = []): int {
+        $this->handle->exec($this->getStatement($stmt, $params));
+        return $this->handle->lastInsertId();
     }
 
     /**
@@ -77,16 +93,57 @@ final class Database extends DatabaseAbstract {
      */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
         $stmt = $this->addLimit($stmt, $count, $offset);
-
-        $res = $this->query($stmt, $params);
+        $stmt = $this->getStatement($stmt, $params);
+        $res = $this->query($stmt);
         $rv = [];
 
-        /** @noinspection PhpAssignmentInConditionInspection */
-        while(($row = $res->fetch_assoc())) {
+        foreach($res as $row) {
             $rv[] = $row;
         }
-        $res->close();
         return $rv;
+    }
+
+    /**
+     * @param string $stmt
+     * @param array $params
+     * @return false|PDOStatement
+     * @throws Exception
+     */
+    public function query(string $stmt, array $params = [])
+    {
+        try {
+            $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
+
+        } catch (Throwable $exc) {
+            $data = $this->handle->errorInfo();
+            throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])", DatabaseException::QUERY_FAILED);
+        }
+
+        return $res;
+    }
+
+
+
+    /**
+     * @throws Exception
+     */
+    public function selectRow(string $stmt, array $params = [], int $row = 0): array {
+        $res = $this->select($stmt, $params, $row, 1);
+        if(empty($res)) {
+            return [];
+        }
+        return array_shift($res);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function selectSingle(string $stmt, array $params = []) {
+        $res = $this->selectRow($stmt, $params);
+        if(empty($res)) {
+            return null;
+        }
+        return array_shift($res);
     }
 
     /**
@@ -100,11 +157,15 @@ final class Database extends DatabaseAbstract {
         $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`", $conditions), $params);
         $rv = [];
 
+        foreach($res as $row) {
+            $rv[] = $row;
+        }
+
         /** @noinspection PhpAssignmentInConditionInspection */
         while(($row = $res->fetch_assoc())) {
             $rv[$row['k']] = $row['v'];
         }
-        $res->close();
+
         return $rv;
     }
 
@@ -131,36 +192,85 @@ final class Database extends DatabaseAbstract {
     /**
      * @throws Exception
      */
-    public function query(string $stmt, array $params = []): mysqli_result|null
+    public function selectCount(string $table, array $conditions = [], array $params = []): int {
+        return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
+    }
+
+    /**
+     * @throws Exception
+     */
+    public function entryExists(string $table, string $column, string $value): bool {
+        if($this->selectCount($table, [$column => $value]) == 0) {
+            return false;
+        }
+        return true;
+    }
+
+    public function escape($data): string
     {
+        if (is_null($data)) {
+            return 'NULL';
+        }
+        if (is_bool($data) && $data) {
+            return '1';
+        }
+        if (is_bool($data)) {
+            return '0';
+        }
+        if (is_array($data)) {
+            foreach ($data as &$item) {
+                $item = $this->escape($item);
+            }
+            return implode(", ", $data);
+        }
+        return $this->handle->quote((string)$data);
+    }
+
+    protected function getStatement(string $stmt, array $params = []): string {
         if (!empty($params)) {
             $params = array_map([$this, 'escape'], $params);
             $stmt = vsprintf($stmt, $params);
         }
 
-        $stmt = str_replace('{TABLE_PREFIX}', $this->prefix, $stmt);
+        return str_replace('{TABLE_PREFIX}', $this->prefix, $stmt);
+    }
 
-        $res = $this->handle->query($stmt);
-        if($res === false) {
-            throw new DatabaseException("query <$stmt> failed! ({$this->handle->error})", DatabaseException::QUERY_FAILED);
+    protected function addLimit(string $stmt, ?int $count, int $offset = 0): string {
+        if ($count == null) {
+            return $stmt;
         }
-        if ($res === true) {
-            return null;
+
+        /** @noinspection PhpAssignmentInConditionInspection */
+        if (($pos = mb_stripos($stmt, ' LIMIT ')) !== false) {
+            $stmt = mb_substr($stmt, 0, $pos);
         }
-        return $res;
+
+        if ($offset == 0) {
+            return "$stmt LIMIT $count";
+        }
+        return "$stmt LIMIT $offset, $count";
     }
 
-    protected function getAffectedRows(): int
-    {
-        return $this->handle->affected_rows;
-    }
+    /**
+     * @throws Exception
+     */
+    protected function addConditions(string $stmt, array $conditions = []): string {
+        if (mb_stripos($stmt, ' WHERE ') !== false) {
+            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set", DatabaseException::WHERE_CONDITON_ALLREADY_SET);
+        }
 
-    protected function getLastInsertedId(): int {
-        return $this->handle->insert_id;
-    }
+        if (empty($conditions)) {
+            return $stmt;
+        }
 
-    protected function escapeString(string $string): string
-    {
-        return $this->handle->real_escape_string($string);
+        foreach ($conditions as $column => &$item) {
+            if (is_array($item)) {
+                $item = "`$column` IN({$this->escape($item)})";
+            } else {
+                $item = "`$column` = '{$this->escape($item)}'";
+            }
+        }
+
+        return "$stmt WHERE " . implode(' AND ', $conditions);
     }
 }
