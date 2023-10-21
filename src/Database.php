@@ -150,11 +150,6 @@ class Database implements DatabaseInterface {
         $rv = [];
 
         foreach($res as $row) {
-            $rv[] = $row;
-        }
-
-        /** @noinspection PhpAssignmentInConditionInspection */
-        while(($row = $res->fetch_assoc())) {
             $rv[$row['k']] = $row['v'];
         }
 
@@ -171,13 +166,12 @@ class Database implements DatabaseInterface {
         $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `" . implode("`, `", $values) . "` FROM `$table`", $conditions), $params);
         $rv = [];
 
-        /** @noinspection PhpAssignmentInConditionInspection */
-        while(($row = $res->fetch_assoc())) {
+        foreach($res as $row) {
             $key = $row['k'];
             unset($row['k']);
             $rv[$key] = $row;
         }
-        $res->close();
+
         return $rv;
     }
 
