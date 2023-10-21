@@ -47,9 +47,6 @@ class Database implements DatabaseInterface {
         $this->connect();
     }
 
-    /**
-     * @throws Exception
-     */
     protected function connect(): void {
         $this->handle = new PDO($this->dsn, $this->usr, $this->pwd);
         #  throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
@@ -69,9 +66,6 @@ class Database implements DatabaseInterface {
         return [];
     }
 
-    /**
-     * @throws Exception
-     */
     public function delete(string $stmt, array $params = []): int {
         return $this->update($stmt, $params);
     }
@@ -80,9 +74,6 @@ class Database implements DatabaseInterface {
         return $this->handle->exec($this->getStatement($stmt, $params));
     }
 
-    /**
-     * @throws Exception
-     */
     public function insert(string $stmt, array $params = []): int {
         $this->handle->exec($this->getStatement($stmt, $params));
         return $this->handle->lastInsertId();
@@ -94,6 +85,7 @@ class Database implements DatabaseInterface {
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
         $stmt = $this->addLimit($stmt, $count, $offset);
         $stmt = $this->getStatement($stmt, $params);
+
         $res = $this->query($stmt);
         $rv = [];
 
@@ -114,7 +106,7 @@ class Database implements DatabaseInterface {
         try {
             $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
 
-        } catch (Throwable $exc) {
+        } catch (Throwable) {
             $data = $this->handle->errorInfo();
             throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])", DatabaseException::QUERY_FAILED);
         }
