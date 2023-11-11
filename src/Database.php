@@ -66,15 +66,18 @@ class Database implements DatabaseInterface {
         return [];
     }
 
-    public function delete(string $stmt, array $params = []): int {
+    public function delete(string $stmt, array $params = []): int
+    {
         return $this->update($stmt, $params);
     }
 
-    public function update(string $stmt, array $params = []): int {
+    public function update(string $stmt, array $params = []): int
+    {
         return $this->handle->exec($this->getStatement($stmt, $params));
     }
 
-    public function insert(string $stmt, array $params = []): int {
+    public function insert(string $stmt, array $params = []): int
+    {
         $this->handle->exec($this->getStatement($stmt, $params));
         return $this->handle->lastInsertId();
     }
@@ -82,7 +85,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array {
+    public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array
+    {
         $stmt = $this->addLimit($stmt, $count, $offset);
         $stmt = $this->getStatement($stmt, $params);
 
@@ -114,12 +118,11 @@ class Database implements DatabaseInterface {
         return $res;
     }
 
-
-
     /**
      * @throws Exception
      */
-    public function selectRow(string $stmt, array $params = [], int $row = 0): array {
+    public function selectRow(string $stmt, array $params = [], int $row = 0): array
+    {
         $res = $this->select($stmt, $params, $row, 1);
         if(empty($res)) {
             return [];
@@ -130,7 +133,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    public function selectSingle(string $stmt, array $params = []) {
+    public function selectSingle(string $stmt, array $params = [])
+    {
         $res = $this->selectRow($stmt, $params);
         if(empty($res)) {
             return null;
@@ -141,7 +145,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array {
+    public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array
+    {
         $key = $this->escape($key);
         $value = $this->escape($value);
         $table = $this->escape($table);
@@ -159,7 +164,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array {
+    public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array
+    {
         $key = $this->escape($key);
         $table = $this->escape($table);
 
@@ -178,14 +184,16 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    public function selectCount(string $table, array $conditions = [], array $params = []): int {
+    public function selectCount(string $table, array $conditions = [], array $params = []): int
+    {
         return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
     }
 
     /**
      * @throws Exception
      */
-    public function entryExists(string $table, string $column, string $value): bool {
+    public function entryExists(string $table, string $column, string $value): bool
+    {
         if($this->selectCount($table, [$column => $value]) == 0) {
             return false;
         }
@@ -212,7 +220,8 @@ class Database implements DatabaseInterface {
         return $this->handle->quote((string)$data);
     }
 
-    protected function getStatement(string $stmt, array $params = []): string {
+    protected function getStatement(string $stmt, array $params = []): string
+    {
         if (!empty($params)) {
             $params = array_map([$this, 'escape'], $params);
             $stmt = vsprintf($stmt, $params);
@@ -221,7 +230,8 @@ class Database implements DatabaseInterface {
         return str_replace('{TABLE_PREFIX}', $this->prefix, $stmt);
     }
 
-    protected function addLimit(string $stmt, ?int $count, int $offset = 0): string {
+    protected function addLimit(string $stmt, ?int $count, int $offset = 0): string
+    {
         if ($count == null) {
             return $stmt;
         }
@@ -240,7 +250,8 @@ class Database implements DatabaseInterface {
     /**
      * @throws Exception
      */
-    protected function addConditions(string $stmt, array $conditions = []): string {
+    protected function addConditions(string $stmt, array $conditions = []): string
+    {
         if (mb_stripos($stmt, ' WHERE ') !== false) {
             throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set", DatabaseException::WHERE_CONDITON_ALLREADY_SET);
         }
