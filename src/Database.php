@@ -26,42 +26,42 @@ use PDO;
 use PDOStatement;
 use SFW2\Database\Exception as DatabaseException;
 use Throwable;
+use DateTimeInterface;
 
 /**
  * @noinspection PhpUnused
  */
-class Database implements DatabaseInterface {
+class Database implements DatabaseInterface
+{
 
     protected PDO $handle;
 
-    /**
-     * @throws Exception
-     */
     public function __construct(
         protected string $dsn,
         protected string $usr,
         protected string $pwd,
         protected array $options = [],
         protected string $prefix = 'sfw2'
-    ) {
+    )
+    {
         $this->connect();
     }
 
-    protected function connect(): void {
+    protected function connect(): void
+    {
         $this->handle = new PDO($this->dsn, $this->usr, $this->pwd);
         #  throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
         # FIXME: Nur bei mysql:
         # $this->query("set names 'utf8';");
     }
 
-    /**
-     * @throws Exception
-     */
-    public function __wakeup(): void {
+    public function __wakeup(): void
+    {
         $this->connect();
     }
 
-    public function __sleep(): array {
+    public function __sleep(): array
+    {
         #unset($this->handle);
         return [];
     }
@@ -105,16 +105,18 @@ class Database implements DatabaseInterface {
      * @return false|PDOStatement
      * @throws Exception
      */
-    public function query(string $stmt, array $params = [])
+    public function query(string $stmt, array $params = []): bool|PDOStatement
     {
         try {
             $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
 
         } catch (Throwable) {
             $data = $this->handle->errorInfo();
-            throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])", DatabaseException::QUERY_FAILED);
+            throw new DatabaseException(
+                "query <$stmt> failed! ($data[0]: $data[1] - $data[2])",
+                DatabaseException::QUERY_FAILED
+            );
         }
-
         return $res;
     }
 
@@ -216,6 +218,9 @@ class Database implements DatabaseInterface {
                 $item = $this->escape($item);
             }
             return implode(", ", $data);
+        }
+        if ($data instanceof DateTimeInterface) {
+            $data = $data->format('Y-m-d H:i:s');
         }
         return $this->handle->quote((string)$data);
     }
