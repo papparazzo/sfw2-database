@@ -146,9 +146,9 @@ class Database implements DatabaseInterface
      */
     public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array
     {
-        $key = $this->escape($key);
-        $value = $this->escape($value);
-        $table = $this->escape($table);
+        $this->checkIdentifier($key);
+        $this->checkIdentifier($value);
+        $this->checkIdentifier($table);
 
         $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`", $conditions), $params);
         $rv = [];
@@ -165,8 +165,8 @@ class Database implements DatabaseInterface
      */
     public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array
     {
-        $key = $this->escape($key);
-        $table = $this->escape($table);
+        $this->checkIdentifier($key);
+        $this->checkIdentifier($table);
 
         $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `" . implode("`, `", $values) . "` FROM `$table`", $conditions), $params);
         $rv = [];
@@ -263,13 +263,28 @@ class Database implements DatabaseInterface
         }
 
         foreach ($conditions as $column => &$item) {
-            if (is_array($item)) {
+            $this->checkIdentifier($column);
+            if (is_array($item) && !empty($item)) {
                 $item = "`$column` IN({$this->escape($item)})";
+            } else if (is_null($item)) {
+                $item = "`$column` IS NULL";
+            } else if (is_scalar($item) || $item instanceof Stringable) {
+                $item = "`$column` = {$this->escape($item)}";
             } else {
-                $item = "`$column` = '{$this->escape($item)}'";
+                throw new DatabaseException("Invalid type for column <$column> given");
             }
         }
 
         return "$stmt WHERE " . implode(' AND ', $conditions);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
+    private function checkIdentifier(string $name): void
+    {
+        if(preg_match('/^[a-zA-Z0-9_{}]+$/', $name) !== 1) {
+            throw new DatabaseException("Invalid type for column <$name> given");
+        }
     }
 }
