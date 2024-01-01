@@ -24,7 +24,7 @@ namespace SFW2\Database;
 
 use PDO;
 use PDOStatement;
-use SFW2\Database\Exception as DatabaseException;
+use Stringable;
 use Throwable;
 use DateTimeInterface;
 
@@ -50,7 +50,7 @@ class Database implements DatabaseInterface
     protected function connect(): void
     {
         $this->handle = new PDO($this->dsn, $this->usr, $this->pwd);
-        #  throw new DatabaseException("Could not connect to database <$err>", DatabaseException::INIT_CONNECTION_FAILED);
+        #  throw new DatabaseException("Could not connect to database <$err>");
         # FIXME: Nur bei mysql:
         # $this->query("set names 'utf8';");
     }
@@ -83,7 +83,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array
     {
@@ -103,7 +103,7 @@ class Database implements DatabaseInterface
      * @param string $stmt
      * @param array $params
      * @return false|PDOStatement
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function query(string $stmt, array $params = []): bool|PDOStatement
     {
@@ -112,16 +112,13 @@ class Database implements DatabaseInterface
 
         } catch (Throwable) {
             $data = $this->handle->errorInfo();
-            throw new DatabaseException(
-                "query <$stmt> failed! ($data[0]: $data[1] - $data[2])",
-                DatabaseException::QUERY_FAILED
-            );
+            throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])");
         }
         return $res;
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function selectRow(string $stmt, array $params = [], int $row = 0): array
     {
@@ -133,7 +130,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function selectSingle(string $stmt, array $params = [])
     {
@@ -145,7 +142,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array
     {
@@ -164,7 +161,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array
     {
@@ -184,7 +181,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function selectCount(string $table, array $conditions = [], array $params = []): int
     {
@@ -192,7 +189,7 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     public function entryExists(string $table, string $column, string $value): bool
     {
@@ -253,12 +250,12 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @throws Exception
+     * @throws DatabaseException
      */
     protected function addConditions(string $stmt, array $conditions = []): string
     {
         if (mb_stripos($stmt, ' WHERE ') !== false) {
-            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set", DatabaseException::WHERE_CONDITON_ALLREADY_SET);
+            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set");
         }
 
         if (empty($conditions)) {

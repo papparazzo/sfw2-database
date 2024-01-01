@@ -22,12 +22,9 @@
 
 namespace SFW2\Database;
 
-use Exception as BaseException;
+use Exception;
 
-class Exception extends BaseException {
-    final public const INIT_CONNECTION_FAILED      = 1;
-    final public const NO_ROW_FETCHED_SEL_ROW      = 2;
-    final public const NO_ROW_FETCHED_SEL_SNG      = 3;
-    final public const QUERY_FAILED                = 4;
-    final public const WHERE_CONDITON_ALLREADY_SET = 5;
+class DatabaseException extends Exception
+{
+
 }
