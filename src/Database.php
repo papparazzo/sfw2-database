@@ -144,13 +144,17 @@ class Database implements DatabaseInterface
     /**
      * @throws DatabaseException
      */
-    public function selectKeyValue(string $key, string $value, string $table, array $conditions = [], array $params = []): array
+    public function selectKeyValue(
+        string $key, string $value, string $table, array $conditions = [], array $params = []
+    ): array
     {
         $this->checkIdentifier($key);
         $this->checkIdentifier($value);
         $this->checkIdentifier($table);
 
-        $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`", $conditions), $params);
+        /** @noinspection SqlResolve */
+        $stmt = "SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`";
+        $res = $this->query($this->addConditions($stmt, $conditions), $params);
         $rv = [];
 
         foreach($res as $row) {
@@ -163,12 +167,15 @@ class Database implements DatabaseInterface
     /**
      * @throws DatabaseException
      */
-    public function selectKeyValues(string $key, array $values, string $table, array $conditions = [], array $params = []): array
+    public function selectKeyValues(
+        string $key, array $values, string $table, array $conditions = [], array $params = []
+    ): array
     {
         $this->checkIdentifier($key);
         $this->checkIdentifier($table);
 
-        $res = $this->query($this->addConditions("SELECT `$key` AS `k`, `" . implode("`, `", $values) . "` FROM `$table`", $conditions), $params);
+        $stmt = "SELECT `$key` AS `k`, `" . implode("`, `", $values) . "` FROM `$table`";
+        $res = $this->query($this->addConditions($stmt, $conditions), $params);
         $rv = [];
 
         foreach($res as $row) {
@@ -185,7 +192,9 @@ class Database implements DatabaseInterface
      */
     public function selectCount(string $table, array $conditions = [], array $params = []): int
     {
-        return $this->selectSingle($this->addConditions("SELECT COUNT(*) AS `cnt` FROM `$table`", $conditions), $params);
+        /** @noinspection SqlResolve */
+        $stmt = "SELECT COUNT(*) AS `cnt` FROM `$table`";
+        return $this->selectSingle($this->addConditions($stmt, $conditions), $params);
     }
 
     /**
