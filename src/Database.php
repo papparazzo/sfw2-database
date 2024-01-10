@@ -88,9 +88,7 @@ class Database implements DatabaseInterface
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array
     {
         $stmt = $this->addLimit($stmt, $count, $offset);
-        $stmt = $this->getStatement($stmt, $params);
-
-        $res = $this->query($stmt);
+        $res = $this->query($stmt, $params);
         $rv = [];
 
         foreach($res as $row) {
@@ -108,6 +106,7 @@ class Database implements DatabaseInterface
     public function query(string $stmt, array $params = []): bool|PDOStatement
     {
         try {
+            $stmt = $this->getStatement($stmt, $params);
             $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
 
         } catch (Throwable) {
