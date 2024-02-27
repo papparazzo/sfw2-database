@@ -22,14 +22,26 @@
 
 namespace SFW2\Database;
 
-interface DatabaseInterface {
-
+interface DatabaseInterface
+{
+    /**
+     * @throws DatabaseException
+     */
     public function delete(string $stmt, array $params = []): int;
 
+    /**
+     * @throws DatabaseException
+     */
     public function update(string $stmt, array $params = []): int;
 
+    /**
+     * @throws DatabaseException
+     */
     public function insert(string $stmt, array $params = []): int;
 
+    /**
+     * @throws DatabaseException
+     */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array;
 
     public function selectRow(string $stmt, array $params = [], int $row = 0): array;
