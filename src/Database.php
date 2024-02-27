@@ -40,7 +40,7 @@ class Database implements DatabaseInterface
         protected string $dsn,
         protected string $usr,
         protected string $pwd,
-        protected array $options = [],
+        protected array  $options = [],
         protected string $prefix = 'sfw2'
     )
     {
@@ -91,7 +91,7 @@ class Database implements DatabaseInterface
         $res = $this->query($stmt, $params);
         $rv = [];
 
-        foreach($res as $row) {
+        foreach ($res as $row) {
             $rv[] = $row;
         }
         return $rv;
