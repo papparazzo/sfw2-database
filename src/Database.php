@@ -256,43 +256,4 @@ class Database implements DatabaseInterface
         }
         return "$stmt LIMIT $offset, $count";
     }
-
-    /**
-     * @throws DatabaseException
-     */
-    protected function addConditions(string $stmt, array $conditions = []): string
-    {
-        if (mb_stripos($stmt, ' WHERE ') !== false) {
-            throw new DatabaseException("WHERE-Condition in stmt <$stmt> allready set");
-        }
-
-        if (empty($conditions)) {
-            return $stmt;
-        }
-
-        foreach ($conditions as $column => &$item) {
-            $this->checkIdentifier($column);
-            if (is_array($item) && !empty($item)) {
-                $item = "`$column` IN({$this->escape($item)})";
-            } else if (is_null($item)) {
-                $item = "`$column` IS NULL";
-            } else if (is_scalar($item) || $item instanceof Stringable) {
-                $item = "`$column` = {$this->escape($item)}";
-            } else {
-                throw new DatabaseException("Invalid type for column <$column> given");
-            }
-        }
-
-        return "$stmt WHERE " . implode(' AND ', $conditions);
-    }
-
-    /**
-     * @throws DatabaseException
-     */
-    private function checkIdentifier(string $name): void
-    {
-        if(preg_match('/^[a-zA-Z0-9_{}]+$/', $name) !== 1) {
-            throw new DatabaseException("Invalid type for column <$name> given");
-        }
-    }
 }
