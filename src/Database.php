@@ -24,7 +24,6 @@ namespace SFW2\Database;
 
 use PDO;
 use PDOStatement;
-use Stringable;
 use Throwable;
 use DateTimeInterface;
 
