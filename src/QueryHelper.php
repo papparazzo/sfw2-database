@@ -70,7 +70,7 @@ class QueryHelper
 
         /** @noinspection SqlResolve */
         $stmt = "SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`";
-        $res = $this->query($this->addConditions($stmt, $conditions), $params);
+        $res = $this->database->query($this->addConditions($stmt, $conditions), $params);
         $rv = [];
 
         foreach($res as $row) {
