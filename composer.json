@@ -1,10 +1,20 @@
 {
     "name": "sfw2/database",
     "type": "library",
-    "license": "GNU AFFERO GENERAL PUBLIC LICENSE Version 3",
-
+    "homepage": "https://fabienne.pro",
+    "license": "AGPL-3.0-or-later",
+    "description": "abstract database layer",
+    "keywords": ["sfw2", "micro-framework", "database"],
+    "authors": [
+        {
+            "name": "Stefan Paproth",
+            "email": "pappi-@gmx.de"
+        }
+    ],
     "require": {
         "php": "^8.2",
+
+        "sfw2/exception": "1.2.0",
 
         "ext-mbstring": "*",
         "ext-pdo": "*"
@@ -15,6 +25,7 @@
         }
     },
     "require-dev": {
-        "phpstan/phpstan": "^1.10"
+        "phpstan/phpstan": "^1.10",
+        "squizlabs/php_codesniffer": "^3.11"
     }
 }
