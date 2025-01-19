@@ -17,7 +17,6 @@
  *
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/agpl.txt>.
- *
  */
 
 declare(strict_types=1);
@@ -62,8 +61,7 @@ class QueryHelper
      */
     public function selectKeyValue(
         string $key, string $value, string $table, array $conditions = [], array $params = []
-    ): array
-    {
+    ): array {
         $this->checkIdentifier($key);
         $this->checkIdentifier($value);
         $this->checkIdentifier($table);
@@ -85,8 +83,7 @@ class QueryHelper
      */
     public function selectKeyValues(
         string $key, array $values, string $table, array $conditions = [], array $params = []
-    ): array
-    {
+    ): array {
         $this->checkIdentifier($key);
         $this->checkIdentifier($table);
 

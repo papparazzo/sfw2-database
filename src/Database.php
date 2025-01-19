@@ -17,7 +17,6 @@
  *
  *  You should have received a copy of the GNU Affero General Public License
  *  along with this program. If not, see <http://www.gnu.org/licenses/agpl.txt>.
- *
  */
 
 namespace SFW2\Database;
@@ -41,17 +40,16 @@ class Database implements DatabaseInterface
         protected string $pwd,
         protected array  $options = [],
         protected string $prefix = 'sfw2'
-    )
-    {
+    ) {
         $this->connect();
     }
 
     protected function connect(): void
     {
         $this->handle = new PDO($this->dsn, $this->usr, $this->pwd);
-        #  throw new DatabaseException("Could not connect to database <$err>");
-        # FIXME: Nur bei mysql:
-        # $this->query("set names 'utf8';");
+        // throw new DatabaseException("Could not connect to database <$err>");
+        // FIXME: Nur bei mysql:
+        // $this->query("set names 'utf8';");
     }
 
     public function __wakeup(): void
@@ -61,7 +59,7 @@ class Database implements DatabaseInterface
 
     public function __sleep(): array
     {
-        #unset($this->handle);
+        // unset($this->handle);
         return [];
     }
 
@@ -97,8 +95,8 @@ class Database implements DatabaseInterface
     }
 
     /**
-     * @param string $stmt
-     * @param array $params
+     * @param  string $stmt
+     * @param  array  $params
      * @return false|PDOStatement
      * @throws DatabaseException
      */
@@ -107,7 +105,6 @@ class Database implements DatabaseInterface
         try {
             $stmt = $this->getStatement($stmt, $params);
             $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
-
         } catch (Throwable) {
             $data = $this->handle->errorInfo();
             throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])");
