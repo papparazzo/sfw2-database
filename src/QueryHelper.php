@@ -155,7 +155,7 @@ class QueryHelper
      */
     protected function checkIdentifier(string $name): void
     {
-        if(preg_match('/^[a-zA-Z0-9_{}]+$/', $name) !== 1) {
+        if(preg_match('/^[a-zA-Z0-9_{}.]+$/', $name) !== 1) {
             throw new DatabaseException("Invalid type for column <$name> given");
         }
     }
