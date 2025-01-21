@@ -21,8 +21,8 @@
 
 namespace SFW2\Database;
 
-use Exception;
+use SFW2\Exception\SFW2Exception;
 
-class DatabaseException extends Exception
+class DatabaseException extends SFW2Exception
 {
 }
