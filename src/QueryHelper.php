@@ -103,6 +103,15 @@ class QueryHelper
     /**
      * @throws DatabaseException
      */
+    public function selectColumn(string $stmt, array $params = []): array
+    {
+        $res = $this->database->select($stmt, $params);
+        return array_map(fn($item) => array_shift($item), $res);
+    }
+
+    /**
+     * @throws DatabaseException
+     */
     public function selectCount(string $table, array $conditions = [], array $params = []): int
     {
         /** @noinspection SqlResolve */
