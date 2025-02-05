@@ -14,10 +14,10 @@
     "require": {
         "php": "^8.2",
 
-        "sfw2/exception": "1.2.0",
-
         "ext-mbstring": "*",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+
+        "sfw2/exception": "^2.0"
     },
     "autoload": {
         "psr-4": {
