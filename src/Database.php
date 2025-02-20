@@ -34,6 +34,13 @@ class Database implements DatabaseInterface
 
     protected PDO $handle;
 
+    /**
+     * @param string $dsn
+     * @param string $usr
+     * @param string $pwd
+     * @param array<string, string> $options
+     * @param string $prefix
+     */
     public function __construct(
         protected string $dsn,
         protected string $usr,
