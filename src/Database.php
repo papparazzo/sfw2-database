@@ -101,18 +101,13 @@ class Database implements DatabaseInterface
         return $rv;
     }
 
-    /**
-     * @param  string $stmt
-     * @param  array  $params
-     * @return false|PDOStatement
-     * @throws DatabaseException
-     */
     public function query(string $stmt, array $params = []): bool|PDOStatement
     {
         try {
             $stmt = $this->getStatement($stmt, $params);
             $res = $this->handle->query($stmt, PDO::FETCH_ASSOC);
         } catch (Throwable) {
+            /** @var array{string, int, string} $data */
             $data = $this->handle->errorInfo();
             throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])");
         }
@@ -142,6 +137,11 @@ class Database implements DatabaseInterface
         return $this->handle->quote((string)$data);
     }
 
+    /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return string
+     */
     protected function getStatement(string $stmt, array $params = []): string
     {
         if (!empty($params)) {
