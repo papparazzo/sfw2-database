@@ -25,21 +25,35 @@ namespace SFW2\Database;
 interface DatabaseInterface
 {
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return int
      * @throws DatabaseException
      */
     public function delete(string $stmt, array $params = []): int;
 
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return int
      * @throws DatabaseException
      */
     public function update(string $stmt, array $params = []): int;
 
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return int
      * @throws DatabaseException
      */
     public function insert(string $stmt, array $params = []): int;
 
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @param int|null $count
+     * @param int $offset
+     * @return list<array<string, string>>
      * @throws DatabaseException
      */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array;
