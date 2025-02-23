@@ -33,6 +33,10 @@ class QueryHelper
     }
 
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @param int $row
+     * @return array<string, string>
      * @throws DatabaseException
      */
     public function selectRow(string $stmt, array $params = [], int $row = 0): array
@@ -45,6 +49,9 @@ class QueryHelper
     }
 
     /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return string|null
      * @throws DatabaseException
      */
     public function selectSingle(string $stmt, array $params = [])
@@ -57,6 +64,12 @@ class QueryHelper
     }
 
     /**
+     * @param string $key
+     * @param string $value
+     * @param string $table
+     * @param array<string, string> $conditions
+     * @param array<string, string> $params
+     * @return array<string, string>
      * @throws DatabaseException
      */
     public function selectKeyValue(
@@ -68,6 +81,7 @@ class QueryHelper
 
         /** @noinspection SqlResolve */
         $stmt = "SELECT `$key` AS `k`, `$value` AS `v` FROM `$table`";
+        /** @var list<array{k: string, v: string}> $res */
         $res = $this->database->query($this->addConditions($stmt, $conditions), $params);
         $rv = [];
 
@@ -79,6 +93,12 @@ class QueryHelper
     }
 
     /**
+     * @param string $key
+     * @param string[] $values
+     * @param string $table
+     * @param array<string, string> $conditions
+     * @param array<string, string> $params
+     * @return array<string, array<string, string>>
      * @throws DatabaseException
      */
     public function selectKeyValues(
