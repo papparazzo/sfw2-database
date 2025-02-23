@@ -77,13 +77,13 @@ class Database implements DatabaseInterface
 
     public function update(string $stmt, array $params = []): int
     {
-        return $this->handle->exec($this->getStatement($stmt, $params));
+        return (int)$this->handle->exec($this->getStatement($stmt, $params));
     }
 
     public function insert(string $stmt, array $params = []): int
     {
         $this->handle->exec($this->getStatement($stmt, $params));
-        return $this->handle->lastInsertId();
+        return (int)$this->handle->lastInsertId();
     }
 
     /**
@@ -114,7 +114,7 @@ class Database implements DatabaseInterface
         return $res;
     }
 
-    public function escape($data): string
+    public function escape(mixed $data): string
     {
         if (is_null($data)) {
             return 'NULL';

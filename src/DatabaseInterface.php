@@ -62,7 +62,7 @@ interface DatabaseInterface
      * @param mixed $data
      * @return string
      */
-    public function escape($data);
+    public function escape(mixed $data): string;
 
     /**
      * @param string $stmt
@@ -70,6 +70,6 @@ interface DatabaseInterface
      * @return mixed
      * @throws DatabaseException
      */
-    public function query(string $stmt, array $params = []);
+    public function query(string $stmt, array $params = []): mixed;
 
 }
