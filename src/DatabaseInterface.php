@@ -58,8 +58,18 @@ interface DatabaseInterface
      */
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array;
 
+    /**
+     * @param mixed $data
+     * @return string
+     */
     public function escape($data);
 
+    /**
+     * @param string $stmt
+     * @param array<string, mixed> $params
+     * @return mixed
+     * @throws DatabaseException
+     */
     public function query(string $stmt, array $params = []);
 
 }
