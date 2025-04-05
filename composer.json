@@ -1,10 +1,9 @@
 {
     "name": "sfw2/database",
-    "description": "abstract database layer",
     "type": "library",
-    "keywords": ["sfw2", "micro-framework", "database"],
-    "homepage": "https://fabienne.pro",
     "license": "AGPL-3.0-or-later",
+    "description": "abstract database layer",
+    "keywords": ["sfw2", "micro-framework", "database"],
     "authors": [
         {
             "name": "Stefan Paproth",
@@ -12,7 +11,7 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.1",
 
         "ext-mbstring": "*",
         "ext-pdo": "*",
