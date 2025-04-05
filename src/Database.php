@@ -27,6 +27,7 @@ use Throwable;
 use DateTimeInterface;
 
 /**
+ * @phpstan-import-type StatementParam from DatabaseInterface
  * @noinspection PhpUnused
  */
 class Database implements DatabaseInterface
@@ -101,7 +102,13 @@ class Database implements DatabaseInterface
         return $rv;
     }
 
-    public function query(string $stmt, array $params = []): bool|PDOStatement
+    /**
+     * @param string $stmt
+     * @param array<string, StatementParam> $params
+     * @return list<array<string, string>>
+     * @throws DatabaseException
+     */
+    public function query(string $stmt, array $params = []): array
     {
         try {
             $stmt = $this->getStatement($stmt, $params);
@@ -111,6 +118,7 @@ class Database implements DatabaseInterface
             $data = $this->handle->errorInfo();
             throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])");
         }
+        /** @var list<array<string, string>> */
         return $res;
     }
 
@@ -139,7 +147,7 @@ class Database implements DatabaseInterface
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @return string
      */
     protected function getStatement(string $stmt, array $params = []): string

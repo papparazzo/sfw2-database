@@ -22,11 +22,16 @@
 
 namespace SFW2\Database;
 
+use DateTimeInterface;
+
+/**
+ * @phpstan-type StatementParam scalar|string[]|DateTimeInterface|null
+ */
 interface DatabaseInterface
 {
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @return int
      * @throws DatabaseException
      */
@@ -34,7 +39,7 @@ interface DatabaseInterface
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @return int
      * @throws DatabaseException
      */
@@ -42,7 +47,7 @@ interface DatabaseInterface
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @return int
      * @throws DatabaseException
      */
@@ -50,7 +55,7 @@ interface DatabaseInterface
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @param int|null $count
      * @param int $offset
      * @return list<array<string, string>>
@@ -59,17 +64,17 @@ interface DatabaseInterface
     public function select(string $stmt, array $params = [], ?int $count = null, int $offset = 0): array;
 
     /**
-     * @param mixed $data
+     * @param StatementParam $data
      * @return string
      */
     public function escape(mixed $data): string;
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
-     * @return mixed
+     * @param array<string, StatementParam> $params
+     * @return list<array<string, string>>
      * @throws DatabaseException
      */
-    public function query(string $stmt, array $params = []): mixed;
+    public function query(string $stmt, array $params = []): array;
 
 }

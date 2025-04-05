@@ -25,6 +25,9 @@ namespace SFW2\Database;
 
 use Stringable;
 
+/**
+ * @phpstan-import-type StatementParam from DatabaseInterface
+ */
 class QueryHelper
 {
     public function __construct(
@@ -34,7 +37,7 @@ class QueryHelper
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @param int $row
      * @return array<string, string>
      * @throws DatabaseException
@@ -50,11 +53,11 @@ class QueryHelper
 
     /**
      * @param string $stmt
-     * @param array<string, mixed> $params
+     * @param array<string, StatementParam> $params
      * @return string|null
      * @throws DatabaseException
      */
-    public function selectSingle(string $stmt, array $params = [])
+    public function selectSingle(string $stmt, array $params = []): ?string
     {
         $res = $this->selectRow($stmt, $params);
         if(empty($res)) {
@@ -68,7 +71,7 @@ class QueryHelper
      * @param string $value
      * @param string $table
      * @param array<string, string> $conditions
-     * @param array<string, string> $params
+     * @param array<string, StatementParam> $params
      * @return array<string, string>
      * @throws DatabaseException
      */
@@ -97,7 +100,7 @@ class QueryHelper
      * @param string[] $values
      * @param string $table
      * @param array<string, string> $conditions
-     * @param array<string, string> $params
+     * @param array<string, StatementParam> $params
      * @return array<string, array<string, string>>
      * @throws DatabaseException
      */
@@ -121,22 +124,30 @@ class QueryHelper
     }
 
     /**
+     * @param string $stmt
+     * @param array<string, StatementParam> $params
+     * @return array<string, string>
      * @throws DatabaseException
      */
     public function selectColumn(string $stmt, array $params = []): array
     {
         $res = $this->database->select($stmt, $params);
+        /** @var array<string, string> */
         return array_map(fn($item) => array_shift($item), $res);
     }
 
     /**
+     * @param string $table
+     * @param array<string, StatementParam> $conditions
+     * @param array<string, StatementParam> $params
+     * @return int
      * @throws DatabaseException
      */
     public function selectCount(string $table, array $conditions = [], array $params = []): int
     {
         /** @noinspection SqlResolve */
         $stmt = "SELECT COUNT(*) AS `cnt` FROM `$table`";
-        return $this->selectSingle($this->addConditions($stmt, $conditions), $params);
+        return (int)$this->selectSingle($this->addConditions($stmt, $conditions), $params);
     }
 
     /**
@@ -151,6 +162,12 @@ class QueryHelper
     }
 
     /**
+     * @throws DatabaseException
+     */
+    /**
+     * @param string $stmt
+     * @param array<string, StatementParam> $conditions
+     * @return string
      * @throws DatabaseException
      */
     protected function addConditions(string $stmt, array $conditions = []): string
@@ -176,6 +193,7 @@ class QueryHelper
             }
         }
 
+        /** @var string[] $conditions */
         return "$stmt WHERE " . implode(' AND ', $conditions);
     }
 
