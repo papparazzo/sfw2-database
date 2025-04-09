@@ -21,8 +21,8 @@
 
 namespace SFW2\Database;
 
+use IteratorAggregate;
 use PDO;
-use PDOStatement;
 use Throwable;
 use DateTimeInterface;
 
@@ -105,10 +105,10 @@ class Database implements DatabaseInterface
     /**
      * @param string $stmt
      * @param array<string, StatementParam> $params
-     * @return list<array<string, string>>
+     * @return IteratorAggregate
      * @throws DatabaseException
      */
-    public function query(string $stmt, array $params = []): array
+    public function query(string $stmt, array $params = []): IteratorAggregate
     {
         try {
             $stmt = $this->getStatement($stmt, $params);
@@ -118,7 +118,6 @@ class Database implements DatabaseInterface
             $data = $this->handle->errorInfo();
             throw new DatabaseException("query <$stmt> failed! ($data[0]: $data[1] - $data[2])");
         }
-        /** @var list<array<string, string>> */
         return $res;
     }
 

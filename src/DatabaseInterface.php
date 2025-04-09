@@ -23,6 +23,7 @@
 namespace SFW2\Database;
 
 use DateTimeInterface;
+use IteratorAggregate;
 
 /**
  * @phpstan-type StatementParam scalar|string[]|DateTimeInterface|null
@@ -72,9 +73,9 @@ interface DatabaseInterface
     /**
      * @param string $stmt
      * @param array<string, StatementParam> $params
-     * @return list<array<string, string>>
+     * @return IteratorAggregate
      * @throws DatabaseException
      */
-    public function query(string $stmt, array $params = []): array;
+    public function query(string $stmt, array $params = []): IteratorAggregate;
 
 }

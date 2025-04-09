@@ -39,7 +39,7 @@ class QueryHelper
      * @param string $stmt
      * @param array<string, StatementParam> $params
      * @param int $row
-     * @return array<string, string>
+     * @return array<string, scalar|null>
      * @throws DatabaseException
      */
     public function selectRow(string $stmt, array $params = [], int $row = 0): array
@@ -54,10 +54,10 @@ class QueryHelper
     /**
      * @param string $stmt
      * @param array<string, StatementParam> $params
-     * @return string|null
+     * @return scalar|null
      * @throws DatabaseException
      */
-    public function selectSingle(string $stmt, array $params = []): ?string
+    public function selectSingle(string $stmt, array $params = []): mixed
     {
         $res = $this->selectRow($stmt, $params);
         if(empty($res)) {
@@ -72,7 +72,7 @@ class QueryHelper
      * @param string $table
      * @param array<string, string> $conditions
      * @param array<string, StatementParam> $params
-     * @return array<string, string>
+     * @return array<string, scalar|null>
      * @throws DatabaseException
      */
     public function selectKeyValue(
@@ -101,7 +101,7 @@ class QueryHelper
      * @param string $table
      * @param array<string, string> $conditions
      * @param array<string, StatementParam> $params
-     * @return array<string, array<string, string>>
+     * @return array<string, array<string, scalar|null>>
      * @throws DatabaseException
      */
     public function selectKeyValues(
@@ -126,7 +126,7 @@ class QueryHelper
     /**
      * @param string $stmt
      * @param array<string, StatementParam> $params
-     * @return array<string, string>
+     * @return array<string, scalar|null>
      * @throws DatabaseException
      */
     public function selectColumn(string $stmt, array $params = []): array
